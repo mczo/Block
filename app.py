@@ -7,10 +7,11 @@ from module.users import Users
 
 def addArg():
     parser = argparse.ArgumentParser(description='Block users on twitter')
-    parser.add_argument('--authorization', nargs='*')
+    parser.add_argument('--authorization')
     parser.add_argument('--url')
     parser.add_argument('--following', action='store_true')
     parser.add_argument('--proxy')
+    args = parser.parse_args()
     return args
 
 if __name__ == "__main__":
@@ -30,12 +31,14 @@ if __name__ == "__main__":
             break
 
     while len(allUsers):
-        currentUser = allUsers.pop()
+        currentUser = allUsers.pop(0)
         
         if 'blocked' in currentUser:
+            print('pass', currentUser['uname'])
             continue
 
         spier.toBlock(currentUser)
+        print('block', currentUser['uname'])
 
         time.sleep(3)
 

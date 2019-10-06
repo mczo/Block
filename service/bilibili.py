@@ -20,10 +20,10 @@ class Bilibili(Spier):
     def __init__(self, authorization, url, proxy):
         super(Bilibili, self).__init__(proxy)
         
-        for cookieItem in authorization:
+        for cookieItem in authorization.split('; '):
             [key, value] = re.split('=', cookieItem)
-            self._cookie[key] = value.replace(';', '')
-        self.headers['Cookie'] = ' '.join(authorization)
+            self._cookie[key.strip()] = value.strip()
+        self.headers['Cookie'] = authorization
 
         self._userid = re.findall(r'\d+', url)[0]
         # self._userid = self.getUserId(self.userName)

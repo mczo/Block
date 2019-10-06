@@ -1,6 +1,5 @@
 import sys, inspect, re
 
-from .twitter import Twitter
 from .bilibili import Bilibili
 
 def getSpier(args):
