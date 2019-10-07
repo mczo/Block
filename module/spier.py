@@ -8,8 +8,6 @@ class Spier(object):
     _userid = ''
     _cookie = {}
 
-    page = 0
-
     def __init__(self, proxy):
         if not proxy:
             self.proxies = {}

@@ -1,0 +1,2 @@
+class SpierEnd(Exception):
+    pass

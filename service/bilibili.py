@@ -2,6 +2,8 @@ import re
 import requests
 
 from module.spier import Spier
+from module.error import SpierEnd
+
 
 class Bilibili(Spier):
     api = {
@@ -17,18 +19,17 @@ class Bilibili(Spier):
         'jsonp': 'jsonp'
     }
 
+    queueUsers = set()
+    endUsers = set()
+
     def __init__(self, authorization, url, proxy):
         super(Bilibili, self).__init__(proxy)
         
-        for cookieItem in authorization.split('; '):
-            [key, value] = re.split('=', cookieItem)
-            self._cookie[key.strip()] = value.strip()
+        self._cookie = dict( map( lambda i: i.strip().split('='), authorization.split(';') ) )
         self.headers['Cookie'] = authorization
 
-        self._userid = re.findall(r'\d+', url)[0]
-        # self._userid = self.getUserId(self.userName)
-        # print(self._userid)
-        
+        self._userid = int( re.findall(r'\d+', url)[0] )
+        self.queueUsers.add(self._userid)
 
     def get(self, url, params):
         return requests.get(
@@ -40,27 +41,43 @@ class Bilibili(Spier):
             verify=False
             )
 
-    def getUsers(self, count=50):
-        self.page += 1
-        params = dict({
-            'vmid': self._userid,
-            'pn': self.page,
-            'ps': count,
-        }, **self.params)
-
-        res = self.get(self.api['followers'], params).json()
-
+    def getFollowers(self, userid):
+        page = 1
         allUsers = list()
-        for user in res['data']['list']:
-            if user['attribute']:
-                user['blocked'] = True
-            allUsers.append(user)
-            
-        return (allUsers, res['data']['total'])
+
+        while(page <= 5):
+            params = dict({
+                'vmid': userid,
+                'pn': page,
+                'ps': 50,
+            }, **self.params)
+            res = self.get(self.api['followers'], params).json()
+
+            for user in res['data']['list']:
+                self.queueUsers.add(user['mid'])
+                newUser = {
+                    'name': user['uname'],
+                    'id': user['mid'],
+                    'blocked': True if user['attribute'] else False 
+                }
+                allUsers.append(newUser)
+
+            page += 1
+
+        return allUsers
+
+    def getUsers(self):
+        currentUserId = self.queueUsers.pop()
+
+        if currentUserId in self.endUsers:
+            return self.getUsers()
+
+        self.endUsers.add(currentUserId)
+        return self.getFollowers(currentUserId)
 
     def toBlock(self, user):
         data = {
-            'fid': user['mid'],
+            'fid': user['id'],
             'act': '5',
             're_src': '11',
             'jsonp': 'jsonp',
@@ -70,5 +87,8 @@ class Bilibili(Spier):
         req = requests.post(self.api['block'], data=data, headers=self.headers)
         res = req.json()
 
-        print(res)
+        if not res['code']:
+            return True
+            
+        return False
         

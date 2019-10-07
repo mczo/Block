@@ -1,9 +1,13 @@
 import argparse
 import logging
 import time
+import asyncio
 
 import service
 from module.users import Users
+from module.error import SpierEnd
+
+allUsers = Users([])
 
 def addArg():
     parser = argparse.ArgumentParser(description='Block users on twitter')
@@ -14,31 +18,42 @@ def addArg():
     args = parser.parse_args()
     return args
 
-if __name__ == "__main__":
+async def asyncGetUser(classSpier):
+    global allUsers
+    while True:
+        await asyncio.sleep(30)
+        try:
+            users = classSpier.getUsers()
+        except SpierEnd:
+            print('用户全部获取')
+            break
+        allUsers += users
+
+async def asyncBlockUser(classSpier):
+    while len(allUsers):
+        currentUser = allUsers.pop(0)
+        
+        if currentUser['blocked']:
+            continue
+
+        status = classSpier.toBlock(currentUser)
+        print(status)
+
+        await asyncio.sleep(3)
+
+async def main():
+    global allUsers
+
     args = addArg()
 
     spier = service.getSpier(args)
 
-    (users, pageTotal) = spier.getUsers()
+    allUsers += spier.getUsers()
 
-    allUsers = Users(users)
+    await asyncio.gather(
+        asyncGetUser(spier),
+        asyncBlockUser(spier)
+    )
 
-    while True:
-        time.sleep(1)
-        (users, _) = spier.getUsers()
-        allUsers += users
-        if len(allUsers) == int(pageTotal) or spier.page == 5:
-            break
-
-    while len(allUsers):
-        currentUser = allUsers.pop(0)
-        
-        if 'blocked' in currentUser:
-            print('pass', currentUser['uname'])
-            continue
-
-        spier.toBlock(currentUser)
-        print('block', currentUser['uname'])
-
-        time.sleep(3)
-
+if __name__ == "__main__":
+    asyncio.run(main())
