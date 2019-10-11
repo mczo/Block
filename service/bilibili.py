@@ -6,13 +6,12 @@ from module.error import SpierEnd
 
 
 class Bilibili(Spier):
+    site = 'bilibili'
+    
     api = {
         'followers': 'https://api.bilibili.com/x/relation/followers',
         'followings': 'https://api.bilibili.com/x/relation/followings',
         'block': 'https://api.bilibili.com/x/relation/modify'
-    }
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1 Safari/605.1.15',
     }
     params = {
         'order': 'desc',
@@ -23,10 +22,7 @@ class Bilibili(Spier):
     endUsers = set()
 
     def __init__(self, authorization, url, proxy):
-        super(Bilibili, self).__init__(proxy)
-        
-        self._cookie = dict( map( lambda i: i.strip().split('='), authorization.split(';') ) )
-        self.headers['Cookie'] = authorization
+        super(Bilibili, self).__init__(authorization, proxy)
 
         self._userid = int( re.findall(r'\d+', url)[0] )
         self.queueUsers.add(self._userid)

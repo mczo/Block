@@ -48,12 +48,12 @@ async def main():
 
     spier = service.getSpier(args)
 
-    allUsers += spier.getUsers()
+    # allUsers += spier.getUsers()
 
-    await asyncio.gather(
-        asyncGetUser(spier),
-        asyncBlockUser(spier)
-    )
+    # await asyncio.gather(
+    #     asyncGetUser(spier),
+    #     asyncBlockUser(spier)
+    # )
 
 if __name__ == "__main__":
     asyncio.run(main())
