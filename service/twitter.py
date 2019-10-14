@@ -7,6 +7,15 @@ from module.error import SpierEnd
 class Twitter():
     site = 'twitter'
 
+    api = {
+        'followers': 'https://api.twitter.com/1.1/followers/ids.json',
+        'followings': 'https://api.twitter.com/1.1/friends/ids.json',
+        'block': 'https://api.twitter.com/1.1/blocks/create.json'
+    }
+    params = {
+        'screen_name': ''
+    }
+
     def __init__(self, authorization, url, proxy):
         super(Twitter, self).__init__(authorization, proxy)
 
