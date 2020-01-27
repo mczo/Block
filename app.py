@@ -9,51 +9,59 @@ from module.error import SpierEnd
 
 allUsers = Users([])
 
+getting = True
+
 def addArg():
     parser = argparse.ArgumentParser(description='Block users on twitter')
-    parser.add_argument('--authorization')
+    groupAuth = parser.add_argument_group('auth')
+    groupAuth.add_argument('--authorization')
+    groupAuth.add_argument('--cookie')
+
     parser.add_argument('--url')
-    parser.add_argument('--following', action='store_true')
     parser.add_argument('--proxy')
     args = parser.parse_args()
     return args
 
 async def asyncGetUser(classSpier):
-    global allUsers
+    global allUsers, getting
     while True:
-        await asyncio.sleep(30)
+        await asyncio.sleep(5)
         try:
             users = classSpier.getUsers()
         except SpierEnd:
             print('用户全部获取')
+            getting = False
             break
         allUsers += users
 
 async def asyncBlockUser(classSpier):
-    while len(allUsers):
+    global getting
+
+    while len(allUsers) or getting:
+        if not len(allUsers): continue
         currentUser = allUsers.pop(0)
-        
-        if currentUser['blocked']:
-            continue
+        if currentUser['blocked']: continue
 
-        status = classSpier.toBlock(currentUser)
-        print(status)
+        res = classSpier.toBlock(currentUser)
 
-        await asyncio.sleep(3)
+        if res:
+            print('已屏蔽：%s' % res['name'])
+        else:
+            print('未屏蔽：%s' % res['name'])
+
+        await asyncio.sleep(1)
 
 async def main():
     global allUsers
 
     args = addArg()
-
     spier = service.getSpier(args)
+    allUsers += spier.getUsers()
 
-    # allUsers += spier.getUsers()
-
-    # await asyncio.gather(
-    #     asyncGetUser(spier),
-    #     asyncBlockUser(spier)
-    # )
+    await asyncio.gather(
+        asyncGetUser(spier),
+        asyncBlockUser(spier)
+    )
 
 if __name__ == "__main__":
     asyncio.run(main())

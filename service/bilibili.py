@@ -23,6 +23,9 @@ class Bilibili(Spier):
 
     def __init__(self, authorization, url, proxy):
         super(Bilibili, self).__init__(authorization, proxy)
+        
+        self._cookie = dict( map( lambda i: i.strip().split('='), authorization.split(';') ) )
+        self.headers['Cookie'] = authorization
 
         self._userid = int( re.findall(r'\d+', url)[0] )
         self.queueUsers.add(self._userid)

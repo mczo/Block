@@ -17,6 +17,5 @@ class Spier(object):
     def __init__(self, authorization, proxy):
         if not proxy:
             self.proxies = {}
-        
-        self._cookie = dict( map( lambda i: i.strip().split('='), authorization.split(';') ) )
-        self.headers['Cookie'] = authorization
+        else:
+            self.proxies = dict( zip( self.proxies, map( lambda v: v + proxy, self.proxies.values() ) ) )

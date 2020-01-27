@@ -1,6 +1,7 @@
 import sys, inspect, re
 
 from .bilibili import Bilibili
+from .twitter import Twitter
 
 def getSpier(args):
     for _, obj in inspect.getmembers(sys.modules[__name__], inspect.isclass):
