@@ -25,7 +25,7 @@ def addArg():
 async def asyncGetUser(classSpier):
     global allUsers, getting
     while True:
-        await asyncio.sleep(5)
+        await asyncio.sleep(20)
         try:
             users = classSpier.getUsers()
         except SpierEnd:
@@ -49,7 +49,7 @@ async def asyncBlockUser(classSpier):
         else:
             print('未屏蔽：%s' % res['name'])
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(3)
 
 async def main():
     global allUsers
